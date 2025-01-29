@@ -1,0 +1,98 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+}
+.bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+.container {
+    background: transparent;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    width: 90%;
+    max-width: 400px;
+}
+.logo {
+    width:  13em;
+    margin-bottom: 15px;
+}
+h1 {
+    font-size: 1.8em;
+}
+.highlight {
+    color: #ff007f;
+}
+.sign-in {
+    background: linear-gradient(to right, #ff007f, #8000ff);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 250px;
+}
+.social-icons {
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.icon {
+    background: #333;
+    padding: 10px;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+}
+.signup {
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+.signup a {
+    color: #ff007f;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.5em;
+    }
+    .container {
+        padding: 15px;
+    }
+    .logo {
+        width: 10em;
+    }
+    .sign-in {
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+    .icon {
+        font-size: 1.2em;
+        padding: 8px;
+    }
+}

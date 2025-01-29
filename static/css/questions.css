@@ -1,0 +1,156 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+.container {
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    background: transparent;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+img {
+    width: 80px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    margin-top: -2rem;
+    font-size: 2rem;
+    /* margin-bottom: 20px; */
+    color: #fff;
+}
+p{
+    margin-top: -2rem;
+    font-size: small;
+    color:#fff
+}
+
+h1 span {
+    color: #ff79c6;
+}
+
+.input-box {
+    position: relative;
+    /* width: 320px; */
+    background: rgba(50, 50, 50, 0.8);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border: 1px solid #444;
+}
+
+/* Input Field */
+.input-box input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: white;
+}
+
+/* Placeholder Text Color */
+.input-box input::placeholder {
+    color: #bbb;
+}
+
+/* Microphone Button */
+.mic-button {
+    color: #fff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    position: absolute;
+    right: 15px;
+}
+
+/* Microphone Icon */
+.mic-button svg {
+    width: 24px;
+    height: 24px;
+    fill: #ff00ff;
+    transition: 0.3s;
+}
+
+/* Glow Effect on Hover */
+.mic-button:hover svg {
+    fill: #ff00ff;
+    filter: drop-shadow(0 0 5px #ff00ff);
+}
+
+.main{
+
+    height: 15rem;
+    width: 15rem;
+    
+}
+@media (max-width: 600px) {
+    body {
+        margin: auto;
+    }
+
+    .container {
+        margin-top: 20rem;
+        margin: 5rem;
+        width: 100%;
+        max-width: 20rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    input {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+
+    button {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+
+    .checkbox {
+        font-size: 0.8rem;
+    }
+
+    .signup {
+        font-size: 0.8rem;
+    }
+
+    .img {
+        position: absolute;
+        top: 1rem;
+        right: 2rem;
+        width: 5rem;
+        margin-bottom: 15px;
+    }
+
+    h1 span {
+        display: block;
+    }
+} 

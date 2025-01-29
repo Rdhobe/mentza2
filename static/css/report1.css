@@ -1,0 +1,45 @@
+
+        body {
+            background-color: #4A0072;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+        }
+        .section {
+            background: #6A0080;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .summary {
+            display: flex;
+            align-items: center;
+            background: #38004D;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .circle {
+            width: 50px;
+            height: 50px;
+            background: conic-gradient(#FF4081 52%, #444 52%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        
+        .title{
+            
+            margin-left: 17rem;
+        }

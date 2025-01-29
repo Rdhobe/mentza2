@@ -1,0 +1,148 @@
+/* General Styling */
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #10001f;
+    /* background: url('/static/BG.jpg'); */
+    color: white;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Container */
+.container {
+    max-width: 400px;
+    margin: auto;
+    background-color: #1a032e;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+/* Profile Section */
+.profile-header {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #3b185f;
+}
+
+.profile-pic {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: auto;
+}
+
+.profile-pic img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid #6a0dad;
+}
+
+.edit-icon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: blue;
+    color: white;
+    border-radius: 50%;
+    padding: 5px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.profile-header h2 {
+    margin: 10px 0 5px;
+}
+
+.profile-header p {
+    color: gray;
+    font-size: 14px;
+}
+
+/* Sections */
+.section {
+    margin-top: 20px;
+}
+
+h3 {
+    background: purple;
+    color: #d4a8ff;
+    font-size: 16px;
+    padding: 1rem;
+    /* width: 10em; */
+    margin: 0 -1.2rem;
+    /* margin-bottom: 10px; */
+}
+
+/* Menu Items */
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: #29064b;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.menu-item span {
+    font-size: 14px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    width: 40px;
+    height: 20px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: gray;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: blue;
+}
+
+input:checked + .slider::before {
+    transform: translateX(20px);
+}
+
+.logout-button {
+    margin-top: 20px;
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}

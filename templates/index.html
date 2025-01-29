@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHAKTII AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+</head>
+<body>
+    <img src="{{ url_for('static', filename='/img/bg.gif') }}" class="bg-video" />
+       
+    <div class="container">
+        <img src="{{ url_for('static', filename='/img/Logoo.png') }}" alt="SHAKTII AI" id="logo" class="logo">
+        <h1>Let's Get <span class="highlight">Started!</span></h1>
+        <button class="sign-in" onclick="login()">SIGN IN</button>
+        <p>OR SIGN IN WITH</p>
+        <div class="social-icons">
+            <button class="icon">📧</button>
+            <button class="icon">📱</button>
+        </div>
+        <p class="signup">DON'T HAVE AN ACCOUNT? <a href="/signup">SIGN UP NOW</a></p>
+    </div>
+</body>
+<script>
+    function login() {
+        window.location.href = '/login';
+    }
+</script>
+</html> 
