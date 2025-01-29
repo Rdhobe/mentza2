@@ -1,0 +1,54 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <title>Login Page</title>
+</head>
+<body>
+    <img src="{{ url_for('static', filename='/img/bg.gif') }}" class="bg-video" />
+    <img src="{{ url_for('static', filename='/img/Logoo.png') }}" class="img" alt="Shakti AI Logo">
+    <div class="container">
+        <img src="/static/img/login.gif" class="main" alt="Shakti AI Logo">
+        <h1>Welcome <span>Back!</span></h1>
+        <form action="/login" method="POST">
+            <input type="email" name="username" id="username" placeholder="Email Address" >
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="Password">
+                <span class="icon" id="togglePassword">👁️</span>
+            </div>
+            <div class="checkbox">
+                <input type="checkbox" name="remember" id="remember">
+                <label for="remember">Remember for 30 days</label>
+            </div>
+            <button type="submit" id="loginButton">LOG IN</button>
+        </form>
+        <a href="#">Forgot Password?</a>
+        <div class="signup">
+            Don't have an account? <a href="/signup">Sign up</a>
+        </div>
+    </div>
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('password');
+
+        togglePassword.addEventListener('click', () => {
+            // Toggle the type attribute
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            
+            // Toggle the eye icon
+            togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+        document.getElementById('username').addEventListener('input', function() {
+    localStorage.setItem('savedUsername', this.value);
+    console.log('Saved username:', localStorage.getItem('savedUsername'));
+});
+
+    </script>
+</body>
+</html>
