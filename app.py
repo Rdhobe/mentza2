@@ -2,7 +2,6 @@ from flask import Flask, jsonify, render_template ,request
 from dotenv import load_dotenv
 from pymongo import MongoClient
 import os
-from bson import ObjectId
 import requests
 from functions import *
 app = Flask(__name__)
@@ -52,7 +51,6 @@ def signup():
         else: 
             # store in database 
             data = {
-                "_id": ObjectId(), 
                 "user_id": generate_userid(),
                 "username": username,
                 "password": password,
