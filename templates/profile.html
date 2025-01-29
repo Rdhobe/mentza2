@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    <style>
+        .reports-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .reports-list {
+            background-color: white;
+            width: 80%;
+            max-width: 500px;
+            max-height: 70%;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .report-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+
+        .report-item h3 {
+            margin: 0 0 10px;
+            color: #333;
+        }
+
+        .report-item button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .report-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .report-details-content {
+            background-color: white;
+            color: navy;
+            width: 80%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Profile Section -->
+        <div class="profile-header">
+            <div class="profile-pic">
+                <img src="{{ url_for('static', filename='/img/logoo.png') }}" alt="Profile">
+                <div class="edit-icon">✎</div>
+            </div>
+            <div>
+                <h2 id="name"></h2>
+                <p id="email"></p>
+            </div>
+        </div>
+    </div>
+    <div class="containerr">
+        <!-- General Settings -->
+        <h3>General Settings</h3>
+        <div class="section">
+            <div class="menu-item">
+                <span id="reports" onclick="fetchReports()">📊 Reports</span>
+                <span>›</span>
+            </div>
+            <div class="menu-item">
+                <span>⚙️ Mode (Dark & Light)</span>
+                <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="menu-item">
+                <span>🔑 Change Password</span>
+                <span>›</span>
+            </div>
+        </div>
+        
+        <!-- Information Section -->
+        <h3>Information</h3>
+        <div class="section">
+            <div class="menu-item">
+                <span>📱 About App</span>
+                <span>›</span>
+            </div>
+            <div class="menu-item">
+                <span>🌐 Language</span>
+                <span>›</span>
+            </div>
+            <div class="menu-item">
+                <span>🔒 Privacy Policy</span>
+                <span>›</span>
+            </div>
+            <div class="menu-item">
+                <span>📤 Share This App</span>
+                <span>›</span>
+            </div>
+        </div>
+        <button onclick="logout()" id="logout" class="logout-button">Log Out</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function() {
+            const username = localStorage.getItem('savedUsername');
+            
+            try {
+                const response = await fetch('/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ "username": username }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById("name").textContent = data.username;
+                    document.getElementById("email").textContent = data.email;
+                } else {
+                    console.error('Failed to fetch profile data');
+                }
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+            }
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        async function fetchReports() {
+            const username = localStorage.getItem('savedUsername');
+            
+            try {
+                const response = await fetch('/fetch-reports', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username: username })
+                });
+
+                if (response.ok) {
+                    const reports = await response.json();
+                    displayReportsModal(reports);
+                } else {
+                    console.error('Failed to fetch reports');
+                }
+            } catch (error) {
+                console.error('Error fetching reports:', error);
+            }
+        }
+
+        function displayReportsModal(reports) {
+            // Remove existing modal if it exists
+            const existingModal = document.getElementById('reports-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Create modal container
+            const modalContainer = document.createElement('div');
+            modalContainer.id = 'reports-modal';
+            modalContainer.className = 'reports-modal';
+
+            // Create reports list
+            const reportsList = document.createElement('div');
+            reportsList.className = 'reports-list';
+
+            if (reports.length === 0) {
+                reportsList.innerHTML = '<p>No reports found.</p>';
+            } else {
+                reports.forEach(report => {
+                    const reportItem = document.createElement('div');
+                    reportItem.className = 'report-item';
+                    reportItem.innerHTML = `
+                        <h3>${report.title || 'Untitled Report'}</h3>
+                        <p>Date: ${report.date || 'N/A'}</p>
+                        <button onclick="showReportDetails('${report._id}')">View Details</button>
+                    `;
+                    reportsList.appendChild(reportItem);
+                });
+            }
+
+            // Add close button
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Close';
+            closeButton.onclick = () => modalContainer.remove();
+            reportsList.appendChild(closeButton);
+
+            modalContainer.appendChild(reportsList);
+            document.body.appendChild(modalContainer);
+
+            // Add click outside to close
+            modalContainer.addEventListener('click', function(event) {
+                if (event.target === modalContainer) {
+                    modalContainer.remove();
+                }
+            });
+        }
+
+        async function showReportDetails(reportId) {
+            const username = localStorage.getItem('savedUsername');
+
+            try {
+                const response = await fetch('/report-details', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        reportId: reportId,
+                        username: username 
+                    })
+                });
+
+                if (response.ok) {
+                    const reportDetails = await response.json();
+                    createReportDetailsModal(reportDetails);
+                } else {
+                    console.error('Failed to fetch report details');
+                }
+            } catch (error) {
+                console.error('Error fetching report details:', error);
+            }
+        }
+
+        function createReportDetailsModal(reportDetails) {
+            // Remove existing details modal
+            const existingModal = document.getElementById('report-details-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Create details modal
+            const detailsModal = document.createElement('div');
+            detailsModal.id = 'report-details-modal';
+            detailsModal.className = 'report-details-modal';
+
+            // Generate detailed HTML
+            const detailsHTML = Object.entries(reportDetails)
+                .filter(([key]) => !['_id', 'title'].includes(key))
+                .map(([key, value]) => `<p><strong>${key.replace(/_/g, ' ')}:</strong> ${value}</p>`)
+                .join('');
+
+            detailsModal.innerHTML = `
+                <div class="report-details-content">
+                    <h2>${reportDetails.title || 'Report Details'}</h2>
+                    ${detailsHTML}
+                    <button onclick="document.getElementById('report-details-modal').remove()">Close</button>
+                </div>
+            `;
+
+            document.body.appendChild(detailsModal);
+        }
+    </script>
+</body>
+</html>

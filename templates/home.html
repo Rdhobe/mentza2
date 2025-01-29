@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <title>Introduction</title>
+    <script>
+        // Function to speak the given text using SpeechSynthesis API
+        function speakText(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'en-US'; // Set language to Marathi
+            speechSynthesis.speak(speech);
+        }
+
+        // Initialize speech recognition
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US'; // Set language to Marathi
+        recognition.interimResults = true; // Enable interim results
+        recognition.maxAlternatives = 1; // Limit results to 1 alternative
+
+        // Function to listen to user's introduction
+        function listenIntroduction() {
+            recognition.start(); // Start listening
+
+            recognition.onresult = function (event) {
+                // Get recognized speech and set it in the textarea
+                const introText = event.results[0][0].transcript;
+                document.getElementById('user_intro').value = introText;
+            };
+
+            recognition.onerror = function (event) {
+                console.error('Speech recognition error:', event.error);
+                alert('Plesae try again.');
+            };
+
+            recognition.onend = function() {
+                console.log('Speech recognition has ended.');
+            };
+        }
+
+        // Prompt the user and speak text when the page loads
+        document.addEventListener("DOMContentLoaded", function () {
+            const promptText = "Hii,I am Sifra. Please introduce yourself to go forward:";
+            speakText(promptText);
+        });
+
+        // Event listener for mic button
+        document.addEventListener('DOMContentLoaded', function() {
+            const micButton = document.getElementById('mic-button');
+            if (micButton) {
+                micButton.addEventListener('click', function() {
+                    listenIntroduction(); // Start listening on mic button click
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="profile" style="color: aliceblue;"><h2 class="Next_Button" onclick="window.location.href='/profile'">profile</h2></div>
+    <img src="/static/bg.gif" class="bg-video" />
+    <img src="/static/Logoo.png" class="img" alt="Shakti AI Logo">
+    <div class="container">
+        <div class=""> 
+            <img src="/static/main.gif" class="main" alt="Shakti AI Logo">
+        </div>
+        <h1>Hi Manav...<span> I am your human-like interview trainer!</span></h1>
+        <form action="/role" method="POST">
+        <button type="submit" class="Next_Button">Next </button>
+    </form>
+    </div>
+</body>
+</html>
