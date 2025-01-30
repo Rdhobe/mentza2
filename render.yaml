@@ -3,5 +3,6 @@ services:
     name: flask-app
     env: python
     plan: free
+    command: chmod +x start.sh
     buildCommand: "pip install -r requirements.txt"
     startCommand: "./start.sh"
