@@ -1,16 +1,156 @@
 from flask import Flask, jsonify, render_template ,request ,redirect ,url_for ,send_file
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from pymongo import MongoClient
 import os
+from datetime import datetime
 import requests
-from functions import *
+import re
+import time
+import json
 app = Flask(__name__)
-load_dotenv()
-change_stream_db = os.getenv('CHANGE_STREAM_DB')
-client = MongoClient(change_stream_db)
+# load_dotenv()
+CHANGE_STREAM_DB = "mongodb+srv://dineshraut121998:NTAl4PbusozWrS2M@mydatabase.gpeeo.mongodb.net/?retryWrites=true&w=majority&appName=myDatabase"
+
+client = MongoClient(CHANGE_STREAM_DB)
 db = client.mentza
 # Global user data storage
 user_data = {"intro": "", "answers": [], "analyses": [], "generated_questions": [], "language": "en"}
+###################################### define functions ###############################################
+#################################################  process streaming   #################################################
+def process_streaming_response(response):
+        """
+        Process streaming response from Ollama API
+        """
+        full_response = ""
+        for line in response.iter_lines():
+            if line:
+                json_response = json.loads(line)
+                if 'message' in json_response:
+                    content = json_response['message'].get('content', '')
+                    full_response += content
+        return full_response
+################################################ question generator #################################################
+def extract_questions(text):
+    return re.findall(r'\d+\.\s(.*?)(?=\n\d+\.|\Z)', text)
+
+# # function to get question 
+def questions_generator(userid,job_role, language, no_of_questions=5):
+    url = "http://localhost:11434/api/chat"
+    no_of_questions = no_of_questions
+    job_role = job_role
+    language = language
+    prompt = f"generate {no_of_questions} question where job role is {job_role} (response in {language} and only include the questions in list , with no extra information)"
+    payload = {
+        "model": "llama3:latest",
+        "messages": [{"role": "user", "content": prompt}]
+    }
+    if db.interview_questions.find_one({"job_role":job_role}) is not None:
+        questions_list = db.interview_questions.find_one({"job_role":job_role})["response"]
+        return questions_list
+    else:
+        response = requests.post(url, json=payload, stream=True)
+        questions = process_streaming_response(response)
+        questions_list = extract_questions(questions)
+        document = {
+                "prompt": prompt,
+                "user_id": userid,
+                "response": questions_list,
+                "job_role": job_role,
+                "language": language,
+                "timestamp": datetime.utcnow()
+            }
+        id=db.interview_questions.insert_one(document)
+    return questions_list
+
+################################################ question generator #################################################
+
+# print(questions_generator("1", "Software Engineer", "English", 5))
+
+
+################################################ evaluate answer #################################################
+
+# # function to evaluate the answer 
+def evaluate_answer(userid ,question, answer):
+    if db.interview_progress.find_one({"user_id":userid}) is not None:
+        try:
+            latest = db.interview_progress.find_one({ "user_id": userid }, sort=[("timestamp", -1)])
+            if latest is not None:
+                response = latest["progress"]  # Get the existing progress list
+                response.append({"question": question, "answer": answer})  # Append new entry
+                db.interview_progress.update_one(
+                    {"user_id": userid},
+                    {"$set": {"progress": response}}
+                )
+                return {"message": "success"}
+        except Exception as e:
+            print(e)
+            return {"message": "error".format(e)}
+    
+    else:
+        try :
+            db.interview_progress.insert_one({"user_id":userid,"progress":[{"question":question,"answer":answer}],"timestamp":datetime.utcnow()})
+            return {"message": "success"}
+        except Exception as e:
+            print(e)
+            return {"message": "error".format(e)}
+
+################################################ evaluate answer #################################################
+
+# print(evaluate_answer("2","Can you describe a challenging software development project you've worked on and how you overcame the obstacles you faced?","I worked on developing a mock interview app using AI, where the main challenges were ensuring the AI could generate role-specific questions and accurately assess user responses. Overcoming these obstacles involved leveraging OpenAI's language models for question generation and response validation, along with thorough testing to fine-tune the scoring and feedback mechanisms. Collaboration with my team and iterative refinement ensured a successful outcome."))
+
+
+################################################  report generation  #################################################
+
+def get_report(userid):
+    url = "http://localhost:11434/api/chat"
+    
+    # get session data from mongodb
+    if db.interview_progress.find_one({"user_id":userid}) is not None:
+        latest = db.interview_progress.find_one({ "user_id": userid }, sort=[("timestamp", -1)])
+        if latest is not None:
+            session_data = latest["progress"]  # Get the existing progress list
+            # print(session_data)
+            if session_data is not None:
+                print("session data fetched successfully")
+            data=db.parameters.find_one({"job_role":"IT Sector"})
+            # print(data["parameters"])
+            if data is not None:
+                print("parameters fetched successfully")
+            parameters=data["parameters"]
+            # send session data to ollama api with prompt
+            prompt = f"Generate a performance report for a mock interview based on the following session data:\n\n{session_data}\n\nInclude strengths, areas for improvement, and tips to enhance performance. And also give some YouTube suggestions related to weakness (JSON response {parameters},youtubelinks,some other source links )"
+            payload = {
+                    "model": "llama3:latest",
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+            start_time = time.time()
+            response = requests.post(url, json=payload, stream=True)
+            report = process_streaming_response(response)
+            end_time = time.time()
+            print(f"Time taken to generate report: {end_time - start_time} seconds")
+            # print(report)
+            
+            # store in mongodb
+            document = {
+                "user_id": userid,
+                "report": report,
+                "timestamp": datetime.utcnow()
+            }
+            db.reports.insert_one(document)
+            # delete data when the interview is complete
+            # db.interview_progress.delete_one({"user_id": userid})
+            return report
+        else:
+            return "No data found"
+        
+    else:
+        return "No data found"
+
+################################################  report generation  #################################################
+
+# print(get_report("1"))
+
+###################################### define functions ###############################################
 
 @app.route("/")
 def home():
@@ -24,14 +164,14 @@ def login():
         username= request.form.get('username')
         password= request.form.get('password')
         credintails= db.users.find_one({"username": username})
-        print(username , password)
-        print(credintails)
+        # print(username , password)
+        # print(credintails)
         if not username or not password:
-            return jsonify({'error': 'Username and password are required'}), 400
+            return render_template('login.html'), 400
         elif None != credintails and username == credintails.get('username') and password == credintails.get('password'): # check with database
-            return render_template('home.html',username=username)
+            return render_template('home.html',username=username,name=credintails.get('name'))
         else : 
-            return jsonify({'error': 'Invalid username or password'}), 401
+            return render_template('login.html'), 401
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST']) # signup route
@@ -41,30 +181,23 @@ def signup():
         username= request.form.get('username') # should be email
         password= request.form.get('password') 
         email= request.form.get('email')
-        # university= request.json.get('university')
-        # degree= request.json.get('degree')
-        # stream= request.json.get('stream')
-        # dob= request.json.get('dob')
+        name= request.form.get('name')
 
-        print(username , password , email ) #, university, dob, degree, stream
+        # print(username , password , email ) #, university, dob, degree, stream
         if not username or not password or not email: # or university or dob or degree or stream
-            return jsonify({'error': 'Username and password are required'}), 400
+            return render_template('signup.html'), 400
         elif db.users.find_one({'email': email}) or db.users.find_one({'username': username}): # already exist
-            return jsonify({'error': 'Username already exists'}), 402
+            return render_template('signup.html'), 402
         else: 
             # store in database 
             data = {
-                "user_id": generate_userid(),
                 "username": username,
                 "password": password,
                 "email": email,
-                # "c_password": c_pass,
-                # "dob": dob,
-                # "degree": degree,
-                # "stream": stream,
-                # "university": university
+                "name": name,
+                "timestamp": datetime.utcnow()
             }
-            print(data)
+            # print(data)
             # mongodb
             response = db.users.insert_one(data)
             if response.inserted_id:
@@ -73,20 +206,6 @@ def signup():
                 return jsonify({'error': 'Signup failed'}), 403
     return render_template('signup.html')
 
-@app.route('/home') # main page 
-def home():
-    return render_template('jobrole.html')
-
-@app.route('/report') # report route
-def report():
-    report = {
-        "technical_proficiency": generate_parameter_analysis(user_data, "technical proficiency", 8),  # Example rating of 8
-        "communication": generate_parameter_analysis(user_data, "communication", 7),  # Example rating of 7
-        "decision_making": generate_parameter_analysis(user_data, "decision making", 6),  # Example rating of 6
-        "confidence": generate_parameter_analysis(user_data, "confidence", 9),  # Example rating of 9
-        "areas_to_improve": generate_parameter_analysis(user_data, "areas to improve", 5),  # Example rating of 5
-    }
-    return render_template('report.html',analysis_report =report )
 
 @app.route('/profile', methods=['GET','POST']) # get profile from database
 def profile():
@@ -94,109 +213,70 @@ def profile():
         return render_template('profile.html')
     username = request.json.get('username') # get id of user  
     user_profile= db.users.find_one({"username": username}) # find user profile by user id 
-    print(user_profile)
+    # print(user_profile)
     return jsonify({"username": user_profile.get('username'), "name": user_profile.get('name'), "email": user_profile.get('email')}), 200
 
-
-@app.route('/role', methods=['GET', 'POST'])
+@app.route("/role",methods=["POST"])
 def role():
-    if request.method == "POST":
-        user_intro = request.form.get("user_intro", "").strip()
-        user_data["intro"] = user_intro
-
-        with open("user_data.txt", "w", encoding="utf-8") as file:
-            file.write(f"वापरकर्ता परिचय: {user_intro}\n")
-
-        return redirect(url_for("job_role"))
-
-    return render_template("home.html")
-
-
-@app.route("/job-role", methods=["GET","POST"])
-def job_role():
-    if request.method == "POST":
-        job_role = request.form.get("job_role", "").strip()
-        language = request.form.get("language", "en").strip()  # Get language selection from form
-        user_data["job_role"] = job_role
-        user_data["language"] = language
-
-        questions = generate_interview_questions(job_role, language)
-
-        if questions:
-            user_data["generated_questions"] = questions
-            with open("user_data.txt", "a", encoding="utf-8") as file:
-                file.write(f"Generated Questions in {language}:\n{questions}\n")
-            return redirect(url_for("questions", question_no=1))
-        else:
-            return "Failed to generate questions. Please try again."
-
     return render_template("job_role.html")
 
-@app.route("/questions/<int:question_no>", methods=["GET", "POST"])
-def questions(question_no):
-    questions = user_data.get("generated_questions", [])
-    language = user_data.get("language", "en")
+@app.route("/job-role", methods=["POST"])
+def job_role():
+    try:
+        if request.method == "POST":
+            job_role = request.form.get("job_role", "").strip()
+            language = request.form.get("language", "en").strip()  # Get language selection from form
+            if language == "en":  # Default to "en" if no language is selected
+                language = "English"
+            elif language == "hi":
+                language = "Hindi"
+            elif language == "mr":
+                language = "Marathi"
+            print(language)
+            userid = request.form.get("username", "").strip()
+            questions = questions_generator(userid,job_role, language, no_of_questions=5)
+            if questions:
+                user_data["job_role"] = job_role
+                user_data["language"] = language
+                user_data["username"] = userid
+                user_data["generated_questions"] = questions
+                return redirect(url_for("questions"))
+    except Exception as e:
+        return render_template("job_role.html")
+    
 
-    if not questions:
-        return "No questions were generated. Please restart the process and ensure the job role is provided."
-
-    if question_no > len(questions):
-        return render_template("report.html", analyses=user_data["analyses"])
-
-    current_question = questions[question_no - 1]
-
-    # Speak the current question in the selected language
-    speak_text(current_question, language, f"question{question_no}.mp3")
-
-    if request.method == "POST":
-        # Capture the user's spoken answer
-        user_input = listen_to_voice()  # Get the voice input from user in selected language
-
-        # If the user didn't speak an answer, we can get it from the form (fallback)
-        if not user_input:
-            user_input = request.form.get("user_answer", "").strip()
-
-        # Analyze the correctness of the answer (not based on actual content, just correctness)
-        feedback = generate_dynamic_feedback(current_question, user_input)
-
-        # Save the answer and feedback
-        user_data["answers"].append(user_input)
-        user_data["analyses"].append(feedback)
-
-        with open("user_data.txt", "a", encoding="utf-8") as file:
-            file.write(f"Question {question_no}: {current_question}\nAnswer: {user_input}\nFeedback: {feedback}\n\n")
-
-        # Speak the feedback in the selected language
-        # speak_text(feedback, language, f"feedback{question_no}.mp3")
-
-        # Proceed to the next question automatically after feedback
-        if question_no < len(questions):
-            return redirect(url_for("questions", question_no=question_no + 1))
+@app.route("/questions", methods=["GET","POST"])
+def questions():
+    if request.method == "GET":
+        # print(user_data)
+        question= user_data["generated_questions"].pop(0)
+        return render_template("questions.html",username=user_data["username"], job_role=user_data["job_role"], language=user_data["language"], questions=question)
+    elif request.method == "POST":
+        data = request.get_json()
+        userid= data["user_id"]
+        user_response= data["user_response"]
+        question= data["question"]
+        evaluate_answer(userid ,question, user_response)
+        if user_data["generated_questions"] and len(user_data["generated_questions"]) > 0:
+            question= user_data["generated_questions"].pop(0)
+            return jsonify({"question": question}), 200
         else:
-            return redirect(url_for("download_report"))
-
-    return render_template("questions.html", question_no=question_no, question=current_question, language=language)
-
-@app.route("/download_report", methods=["GET"])
-def download_report():
-    # Generate a summary of answer analysis
-    summary = generate_summary(user_data["analyses"])
-
-    # Generate the analysis report based on parameters
-    analysis_report = {
-        "technical_proficiency": generate_parameter_analysis(user_data, "technical proficiency", 8),  # Example rating of 8
-        "communication": generate_parameter_analysis(user_data, "communication", 7),  # Example rating of 7
-        "decision_making": generate_parameter_analysis(user_data, "decision making", 6),  # Example rating of 6
-        "confidence": generate_parameter_analysis(user_data, "confidence", 9),  # Example rating of 9
-        "areas_to_improve": generate_parameter_analysis(user_data, "areas to improve", 5),  # Example rating of 5
-    }
-
-    return render_template("report.html", summary=summary, analysis_report=analysis_report)
-
-
-@app.route("/download", methods=["GET"])
-def download_reports():
-    filepath = "user_data.txt"
-    return send_file(filepath, as_attachment=True)
+            return jsonify({"question": "interview completed please click on end button to get report"}), 200
+        
+@app.route("/fetch-reports", methods=["POST"])
+def fetch_reports():
+    userid = request.form.get("username", "").strip()
+    report = db.reports.find({"user_id": userid})
+    if report is None:
+        report = []
+    return render_template("s.html",username=userid, report=report)
+@app.route("/report", methods=["GET","POST"])
+def report():
+    if request.method == "GET":
+        return render_template("report.html")
+    elif request.method == "POST":
+        userid = request.form.get("username", "").strip()
+        report = get_report(userid)
+        return render_template("report.html",username=user_data["username"], report=report)
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=12345)
+    app.run(host="0.0.0.0", port=5000, debug=True)

@@ -5,16 +5,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='static/css/main.css') }}">
     <title>Login Page</title>
 </head>
 <body>
-    <img src="/static/bg.gif" class="bg-video" />
-    <img src="/static/Logoo.png" class="img" alt="Shakti AI Logo">
+    <img src="{{ url_for('static', filename='static/img/bg.gif') }}" class="bg-video" />
+    <img src="{{ url_for('static', filename='static/img/logoo.png') }}" class="img" alt="Shakti AI Logo">
     <div class="container">
         <h1>Hi<span> This is Andy</span></h1>
         <div class=""> 
-            <img src="/static/main.gif" class="main" alt="Shakti AI Logo">
+            <img src="{{ url_for('static', filename='static/img/main.gif') }}" class="main" alt="Shakti AI Logo">
         </div>
         <div class="input-box">
             <input type="text" placeholder="Type Here">
@@ -27,4 +27,12 @@
     </div>
     
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const username = localStorage.getItem('savedUsername');
+                if (!username) {
+                    window.location.href = '/';
+                }
+    })
+</script>
 </html>

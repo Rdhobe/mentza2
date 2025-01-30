@@ -73,6 +73,14 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const username = localStorage.getItem('savedUsername');
+                if (!username) {
+                    window.location.href = '/';
+                }
+    })
+    </script>
 </head>
 <body>
     <div class="container">
@@ -287,6 +295,7 @@
 
             document.body.appendChild(detailsModal);
         }
+        
     </script>
 </body>
 </html>

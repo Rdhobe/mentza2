@@ -20,7 +20,11 @@ body {
     object-fit: cover;
     z-index: -1;
 }
-
+.question {
+    margin-bottom: 20px;
+    color: #fff;
+    font-size: 0.8rem;
+}
 .container {
     text-align: center;
     width: 100%;

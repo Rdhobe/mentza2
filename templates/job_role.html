@@ -5,67 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Role Selection</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/jobrole.css">
-    <script>
-        let selectedLanguage = 'mr'; // Default language is Marathi
+    <link rel="stylesheet" href=" {{ url_for('static', filename='/css/jobrole.css') }}">
 
-        function setLanguage(lang) {
-            selectedLanguage = lang; // Update the selected language
-            document.getElementById("language").value = lang;
-            const promptText = lang === 'mr' ? "तुम्ही कोणत्या नोकरीसाठी तयारी करत आहात?" :
-                               lang === 'hi' ? "आप किस नौकरी की तैयारी कर रहे हैं?" :
-                               "Which job role are you preparing for?";
-            speakText(promptText, lang);
-        }
-
-        function speakText(text, lang) {
-            const speech = new SpeechSynthesisUtterance(text);
-            speech.lang = lang === 'mr' ? 'mr-IN' : lang === 'hi' ? 'hi-IN' : 'en-US';
-            speechSynthesis.speak(speech);
-        }
-
-        function listenJobRole() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = selectedLanguage === 'mr' ? 'mr-IN' :
-                               selectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
-            recognition.start();
-
-            recognition.onresult = function (event) {
-                const jobRole = event.results[0][0].transcript;
-                document.getElementById('job_role').value = jobRole;
-            };
-
-            recognition.onerror = function (event) {
-                alert("Error occurred: " + event.error);
-            };
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            setLanguage('mr'); // Default language is Marathi
-        });
-    </script>
 </head>
 <body>
-
     <div class="container">
-        <img src="/static/Logoo.png" alt="Shakti AI Logo" class="logo">
+        <img src="{{ url_for('static', filename='/img/logoo.png') }}" alt="Shakti AI Logo" class="logo">
         
         <h2>Select</h2>
         <h3>Job Role</h3>
-        <form method="POST" action="/job-role">
+<form method="POST" action="/job-role">
         <input type="text" class="input-box" name="job_role" placeholder="Enter Job Role">
-
+        <input type="text" class="input-box" name="username" hidden="true" value="{{ username }}">
         <h2>Select</h2>
         <h3>Language</h3>
-
         <div class="language-options">
-            <label><input type="radio" name="language" onclick="setLanguage('en')" value="en"> English</label>
-            <label><input type="radio" name="language" onclick="setLanguage('hi')" value="hi"> Hindi</label>
-            <label><input type="radio" name="language" onclick="setLanguage('mr')" value="mr"> Marathi</label>
+            <label><input type="radio" name="language"  value="en"> English</label>
+            <label><input type="radio" name="language"  value="hi"> Hindi</label>
+            <label><input type="radio" name="language"  value="mr"> Marathi</label>
         </div>
-
         <button class="start-btn" type="submit">Start </button>
     </div>
 </form>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const username = localStorage.getItem('savedUsername');
+                if (!username) {
+                    window.location.href = '/';
+                }
+    })
+</script>
 </html>

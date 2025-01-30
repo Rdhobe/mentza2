@@ -13,7 +13,7 @@
     <img src="{{ url_for('static', filename='/img/bg.gif') }}" class="bg-video" />
     <img src="{{ url_for('static', filename='/img/logoo.png') }}" class="img" alt="Shakti AI Logo">
     <div class="container">
-        <img src="/static/img/login.gif" class="main" alt="Shakti AI Logo">
+        <img src="{{ url_for('static', filename='/img/login.gif') }}" class="main" alt="Shakti AI Logo">
         <h1>Welcome <span>Back!</span></h1>
         <form action="/login" method="POST">
             <input type="email" name="username" id="username" placeholder="Email Address" >

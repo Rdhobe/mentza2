@@ -3,39 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/report1.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='static/css/report1.css') }}">
     <title>Analysis Report</title>
 </head>
 <body>
     <div class="container">
         <h1>Analysis Report</h1>
-
-        <h2>Summary of Your Performance</h2>
-        <p>{{ summary }}</p>
-
-        <h2>Detailed Report</h2>
-        <div class="analysis-section">
-            <h3>Technical Proficiency (Rated: {{ analysis_report.technical_proficiency.rating }}/10)</h3>
-            <p>{{ analysis_report.technical_proficiency.report }}</p>
-        </div>
-        <div class="analysis-section">
-            <h3>Communication (Rated: {{ analysis_report.communication.rating }}/10)</h3>
-            <p>{{ analysis_report.communication.report }}</p>
-        </div>
-        <div class="analysis-section">
-            <h3>Decision Making (Rated: {{ analysis_report.decision_making.rating }}/10)</h3>
-            <p>{{ analysis_report.decision_making.report }}</p>
-        </div>
-        <div class="analysis-section">
-            <h3>Confidence (Rated: {{ analysis_report.confidence.rating }}/10)</h3>
-            <p>{{ analysis_report.confidence.report }}</p>
-        </div>
-        <div class="analysis-section">
-            <h3>Areas to Improve (Rated: {{ analysis_report.areas_to_improve.rating }}/10)</h3>
-            <p>{{ analysis_report.areas_to_improve.report }}</p>
-        </div>
-
-        <a href="{{ url_for('download_report') }}">Download Detailed Report</a>
+        <p>{{ report }}</p>
     </div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const username = localStorage.getItem('savedUsername');
+                if (!username) {
+                    window.location.href = '/';
+                }
+    })
+</script>
 </html>
