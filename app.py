@@ -93,9 +93,9 @@ def questions_generator(userid,job_role, language, count=5):
 
             # Extract response text
             response_text = response_data.get("response", "").strip()
-            print(response_text)
+            # print(response_text)
             text= response_text.replace("```json","").replace("```","").replace(",",".").replace("{","").replace("}",",").replace("\"question\"","").replace(":","").replace("\n","").split(",")
-            print(text)
+            # print(text)
             document = {
                             "prompt": prompt,
                             "response": text,
