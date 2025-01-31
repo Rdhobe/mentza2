@@ -1,23 +1,295 @@
 <!DOCTYPE html>
-<html lang="{{ language }}">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='static/css/report1.css') }}">
-    <title>Analysis Report</title>
+    <title>Performance Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background :url('/static/img/bg.gif');
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .score {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            transition: width 1s ease;
+        }
+
+        .card-content {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .resources {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .resources h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .resources h3 {
+            color: #34495e;
+            margin: 15px 0 10px 0;
+        }
+
+        .resources ul {
+            list-style-position: inside;
+            margin-left: 20px;
+        }
+
+        .resources li {
+            color: #3498db;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+
+        .resources li:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Analysis Report</h1>
-        <p>{{ report }}</p>
+        <h1>Performance Report</h1>
+        <div class="grid" id="performanceGrid"></div>
+        <div class="resources">
+            <h2>Recommended Resources</h2>
+            <div>
+                <h3>YouTube Suggestions:</h3>
+                <ul id="youtubeResources"></ul>
+            </div>
+            <div>
+                <h3>Additional Resources:</h3>
+                <ul id="additionalResources"></ul>
+            </div>
+        </div>
     </div>
-</body>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
         const username = localStorage.getItem('savedUsername');
                 if (!username) {
                     window.location.href = '/';
                 }
     })
-</script>
+        const performanceData = [
+            {
+                title: "Overall Performance",
+                score: 6,
+                content: "The candidate demonstrated a consistent effort throughout the mock interview, but struggled with providing meaningful answers to technical questions."
+            },
+            {
+                title: "Technical Proficiency",
+                score: 4,
+                content: "The candidate's technical proficiency was assessed to be 4 out of 10 due to the repetitive and irrelevant answers provided for debugging complex issues in Python code."
+            },
+            {
+                title: "Communication Skills",
+                score: 3,
+                content: "The candidate's communication skills were found to be lacking as they failed to provide concise and meaningful responses."
+            },
+            {
+                title: "Confidence",
+                score: 5,
+                content: "The candidate demonstrated some confidence in their abilities, but it was not consistently evident throughout the interview."
+            },
+            {
+                title: "Language Fluency",
+                score: 6,
+                content: "The candidate's language fluency was average, with no notable mistakes or difficulties in understanding the questions."
+            },
+            {
+                title: "Decision Making",
+                score: 2,
+                content: "The candidate did not demonstrate any significant decision-making skills during the interview."
+            },
+            {
+                title: "Problem Solving",
+                score: 1,
+                content: "The candidate showed little ability to think critically and solve problems creatively."
+            },
+            {
+                title: "Teamwork",
+                score: 5,
+                content: "The candidate's teamwork skills were not assessed as it was not relevant to this mock interview. However, a score of 5 out of 10 would be reasonable based on the candidate's overall performance."
+            },
+            {
+                title: "Time Management",
+                score: 3,
+                content: "The candidate seemed to struggle with time management, providing lengthy and irrelevant answers for some questions."
+            },
+            {
+                title: "Adaptability",
+                score: 2,
+                content: "The candidate demonstrated limited adaptability, failing to adjust their approach to different types of questions."
+            },
+            {
+                title: "Leadership",
+                score: 1,
+                content: "The candidate did not demonstrate any leadership skills during the interview."
+            },
+            {
+                title: "Creativity",
+                score: 1,
+                content: "The candidate's creative thinking was lacking throughout the interview."
+            },
+            {
+                title: "Critical Thinking",
+                score: 2,
+                content: "The candidate showed limited critical thinking skills, failing to provide thoughtful and well-reasoned answers."
+            }
+        ];
+
+        const resources = {
+            youtube: [
+                "5 Tips to Improve Your Debugging Skills by FreeCodeCamp",
+                "Python Debugging Techniques by Corey Schafer",
+                "How to Optimize Python Code by Real Python"
+            ],
+            additional: [
+                "Effective Debugging Techniques by Google Developers",
+                "Debugging Strategies for Programmers by Medium"
+            ]
+        };
+
+        function getScoreColor(score) {
+            if (score <= 3) return '#e74c3c';  // Red
+            if (score <= 6) return '#f1c40f';  // Yellow
+            return '#2ecc71';  // Green
+        }
+
+        function createCard(data) {
+            const color = getScoreColor(data.score);
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">${data.title}</div>
+                        <div class="score" style="background-color: ${color}">${data.score}</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: ${data.score * 10}%; background-color: ${color}"></div>
+                    </div>
+                    <div class="card-content">${data.content}</div>
+                </div>
+            `;
+        }
+
+        $(document).ready(function() {
+            // Render performance cards
+            const grid = $('#performanceGrid');
+            performanceData.forEach(data => {
+                grid.append(createCard(data));
+            });
+
+            // Render resources
+            const youtubeList = $('#youtubeResources');
+            const additionalList = $('#additionalResources');
+
+            resources.youtube.forEach(resource => {
+                youtubeList.append(`<li>${resource}</li>`);
+            });
+
+            resources.additional.forEach(resource => {
+                additionalList.append(`<li>${resource}</li>`);
+            });
+
+            // Add animation on scroll
+            $(window).scroll(function() {
+                $('.card').each(function() {
+                    const cardPosition = $(this).offset().top;
+                    const scrollPosition = $(window).scrollTop() + $(window).height();
+                    
+                    if (scrollPosition > cardPosition) {
+                        $(this).css('opacity', '1');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
 </html>
