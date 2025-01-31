@@ -277,15 +277,8 @@ def job_role():
         if request.method == "POST":
             job_role = request.form.get("job_role", "").strip()
             language = request.form.get("language", "en").strip()  # Get language selection from form
-            if language == "en":  # Default to "en" if no language is selected
-                language = "English"
-            elif language == "hi":
-                language = "Hindi"
-            elif language == "mr":
-                language = "Marathi"
-            print(language)
             userid = request.form.get("username", "").strip()
-            questions = questions_generator(userid,job_role, language, no_of_questions=5)
+            questions = questions_generator(userid,job_role, language, count=5)
             if questions:
                 user_data["job_role"] = job_role
                 user_data["language"] = language
