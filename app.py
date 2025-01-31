@@ -34,33 +34,84 @@ def extract_questions(text):
     return re.findall(r'\d+\.\s(.*?)(?=\n\d+\.|\Z)', text)
 
 # # function to get question 
-def questions_generator(userid,job_role, language, no_of_questions=5):
-    url = "http://139.59.42.156:11434/api/chat"
-    no_of_questions = no_of_questions
-    job_role = job_role
-    language = language
-    prompt = f"generate {no_of_questions} question where job role is {job_role} (response in {language} and only include the questions in list , with no extra information)"
-    payload = {
-        "model": "llama3:latest",
-        "messages": [{"role": "user", "content": prompt}]
+# def questions_generator(userid,job_role, language, no_of_questions=5):
+#     url = "http://139.59.42.156:11434/api/chat"
+#     no_of_questions = no_of_questions
+#     job_role = job_role
+#     language = language
+#     prompt = f"generate {no_of_questions} question where job role is {job_role} (response in {language} and only include the questions in list , with no extra information)"
+#     payload = {
+#         "model": "llama3:latest",
+#         "messages": [{"role": "user", "content": prompt}]
+#     }
+#     if db.interview_questions.find_one({"job_role":job_role}) is not None:
+#         questions_list = db.interview_questions.find_one({"job_role":job_role})["response"]
+#         return questions_list
+#     else:
+#         response = requests.post(url, json=payload, stream=True)
+#         questions = process_streaming_response(response)
+#         questions_list = extract_questions(questions)
+#         document = {
+#                 "prompt": prompt,
+#                 "user_id": userid,
+#                 "response": questions_list,
+#                 "job_role": job_role,
+#                 "language": language,
+#                 "timestamp": datetime.utcnow()
+#             }
+#         id=db.interview_questions.insert_one(document)
+#     return questions_list
+def questions_generator(userid,job_role, language, count=5):
+    url = "http://139.59.42.156:11434/api/generate"  # API URL
+    headers = {"Content-Type": "application/json"}
+
+    # Define language prompts
+    language_prompt = {
+        "en": f"Generate {count} interview questions for a {job_role} in JSON format. "
+              f"Return a JSON array of objects, each containing only a 'question' key.",
+        "mr": f"{job_role} साठी {count} मुलाखतीचे प्रश्न JSON स्वरूपात तयार करा. "
+              f"फक्त 'question' असलेली JSON यादी परत करा.",
+        "hi": f"{job_role} के लिए {count} साक्षात्कार प्रश्न JSON प्रारूप में तैयार करें। "
+              f"केवल 'question' कुंजी वाली एक JSON सूची लौटाएं।"
+    }
+
+    prompt = language_prompt.get(language, language_prompt["en"])  # Default to English if not found
+
+    data = {
+        "model": "gemma:2b",
+        "prompt": prompt,
+        "stream": False
     }
     if db.interview_questions.find_one({"job_role":job_role}) is not None:
         questions_list = db.interview_questions.find_one({"job_role":job_role})["response"]
         return questions_list
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 200:
+        try:
+            response_data = response.json()
+
+            # Extract response text
+            response_text = response_data.get("response", "").strip()
+            print(response_text)
+            text= response_text.replace("```json","").replace("```","").replace(",",".").replace("{","").replace("}",",").replace("\"question\"","").replace(":","").replace("\n","").split(",")
+            print(text)
+            document = {
+                            "prompt": prompt,
+                            "response": text,
+                            "job_role": job_role,
+                            "language": language,
+                            "timestamp": datetime.utcnow()
+                    }
+            db.interview_questions.insert_one(document)
+            return text
+            
+        except Exception as e:
+            print("Error processing API response:", e)
+            return []
     else:
-        response = requests.post(url, json=payload, stream=True)
-        questions = process_streaming_response(response)
-        questions_list = extract_questions(questions)
-        document = {
-                "prompt": prompt,
-                "user_id": userid,
-                "response": questions_list,
-                "job_role": job_role,
-                "language": language,
-                "timestamp": datetime.utcnow()
-            }
-        id=db.interview_questions.insert_one(document)
-    return questions_list
+        print("API call failed:", response.status_code, response.text)
+        return []
 
 ################################################ question generator #################################################
 
