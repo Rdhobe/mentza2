@@ -35,7 +35,7 @@ def extract_questions(text):
 
 # # function to get question 
 def questions_generator(userid,job_role, language, no_of_questions=5):
-    url = "http://localhost:11434/api/chat"
+    url = "http://139.59.42.156:11434/api/chat"
     no_of_questions = no_of_questions
     job_role = job_role
     language = language
@@ -102,7 +102,7 @@ def evaluate_answer(userid ,question, answer):
 ################################################  report generation  #################################################
 
 def get_report(userid):
-    url = "http://localhost:11434/api/chat"
+    url = "http://139.59.42.156:11434/api/chat"
     
     # get session data from mongodb
     if db.interview_progress.find_one({"user_id":userid}) is not None:
