@@ -201,7 +201,7 @@ def signup():
             # mongodb
             response = db.users.insert_one(data)
             if response.inserted_id:
-                return render_template('login_new.html')
+                return render_template('login.html')
             else:
                 return jsonify({'error': 'Signup failed'}), 403
     return render_template('signup.html')
