@@ -276,7 +276,10 @@ def report():
         return render_template("report.html")
     elif request.method == "POST":
         userid = request.form.get("username", "").strip()
-        report = get_report(userid)
+        try:
+                report = get_report(userid)
+        except:
+                report ="Sorry for inconvenience, your report is not generated try it may seems like you have not answere questions properly !!"
         return render_template("report.html",username=user_data["username"], report=report)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
