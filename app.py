@@ -205,7 +205,6 @@ def get_report(userid):
 
 @app.route("/")
 def home():
-    
     return render_template("index.html")  # Ensure `index.html` exists in a `templates/` folder
 
 @app.route('/login', methods=['GET', 'POST']) # login route
